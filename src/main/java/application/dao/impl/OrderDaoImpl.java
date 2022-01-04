@@ -27,7 +27,7 @@ public class OrderDaoImpl implements OrderDao {
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new DataProcessingException("Can't add order " + order, e);
+            throw new DataProcessingException("Can't insert order: " + order, e);
         } finally {
             if (session != null) {
                 session.close();
