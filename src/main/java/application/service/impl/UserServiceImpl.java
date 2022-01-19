@@ -1,23 +1,33 @@
 package application.service.impl;
 
 import application.dao.UserDao;
-import application.lib.Inject;
-import application.lib.Service;
+import application.exception.DataProcessingException;
 import application.model.User;
 import application.service.UserService;
-import application.util.HashUtil;
 import java.util.Optional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
-    @Inject
-    private UserDao userDao;
+    private final PasswordEncoder encoder;
+    private final UserDao userDao;
+
+    public UserServiceImpl(PasswordEncoder encoder, UserDao userDao) {
+        this.encoder = encoder;
+        this.userDao = userDao;
+    }
 
     @Override
     public User add(User user) {
-        user.setSalt(HashUtil.getSalt());
-        user.setPassword(HashUtil.hashPassword(user.getPassword(), user.getSalt()));
+        user.setPassword(encoder.encode(user.getPassword()));
         return userDao.add(user);
+    }
+
+    @Override
+    public User get(Long id) {
+        return userDao.get(id).orElseThrow(
+                () -> new DataProcessingException("User with id " + id + " not found"));
     }
 
     @Override
